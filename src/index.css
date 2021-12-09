@@ -1,0 +1,133 @@
+* {
+  margin: 0;
+  padding: 0;
+  border: none;
+  box-sizing: border-box;
+  font-family: Roboto, Lato, Helvetica, Arial, sans-serif;
+  color: #030303;
+}
+
+html,
+body,
+#root,
+.app {
+  min-height: 100vh;
+  width: 100%;
+}
+
+.app {
+  display: flex;
+  overflow: hidden;
+}
+
+aside {
+  width: 250px;
+}
+
+.palette {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px 0;
+}
+
+.shape {
+  margin: 10px;
+  height: 40px;
+  width: 150px;
+  border: solid 1px rgb(121, 120, 120);
+  border-radius: 2%;
+}
+
+.circle {
+  width: 100px;
+  border-radius: 50%;
+}
+.fan {
+    width: 30px;
+    /*border-radius: 50%;*/
+    z-index: 0;
+    padding: 5px;
+    /*user-drag: none;*/
+    -webkit-user-drag: none;
+    user-select: none;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+  }
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+}
+
+.properties {
+  margin-top: 10px;
+}
+
+.key {
+  color: lightslategray;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  align-items: center;
+  height: 25px;
+}
+
+.value {
+  color: darkslategray;
+  font-weight: bolder;
+}
+
+.no-data {
+  color: darkslategray;
+}
+
+.canvas {
+  width: calc(100% - 200px);
+  border: solid 1px lightgray;
+  border-top: none;
+  border-bottom: none;
+  position: relative;
+}
+
+.buttons {
+  display: flex;
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+
+
+.buttons button {
+  margin: 4px;
+  height: 30px;
+  text-transform: uppercase;
+  cursor: pointer;
+  background: lightgray;
+  transition: all 0.25s ease-in;
+  z-index: 10;
+  padding: 0 8px;
+  border-radius: 4px;
+}
+
+.buttons button:hover {
+  background: rgb(212, 211, 211);
+}
+select {
+    margin: 4px;
+    width: 150px;
+    padding: 5px 25px 5px 5px;
+    font-size: 16px;
+    border: 1px solid #CCC;
+    height: 34px;
+    border-radius: 4px;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background: url(https://img.icons8.com/material-outlined/24/000000/expand-arrow--v2.png) 96% / 15% no-repeat #EEE;
+    
+  }
+  
+  
