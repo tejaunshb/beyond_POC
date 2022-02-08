@@ -3,6 +3,7 @@ import produce from "immer";
 import clamp from "clamp";
 import { nanoid } from "nanoid";
 import { SHAPE_TYPES, DEFAULTS, LIMITS } from "./constants";
+const { message, Button, Space } = require("antd");
 
 const APP_NAMESPACE = "__integrtr_diagrams__";
 const AREA = "AREA"
@@ -54,13 +55,13 @@ export const saveDiagram = () => {
 	console.log(obj)
 	localStorage.setItem("Overview", JSON.stringify(obj))
 	localStorage.setItem(APP_NAMESPACE, JSON.stringify(state.shapes));
-
+	message.success('Saved');
 };
 
 export const reset = () => {
 	localStorage.removeItem(APP_NAMESPACE);
 	localStorage.removeItem(AREA);
-	localStorage.removeItem("Overview");
+	//localStorage.removeItem("Overview");
 	useShapes.set(baseState);
 };
 
