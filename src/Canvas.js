@@ -1,8 +1,8 @@
-import React, { useRef, useCallback, useState } from "react";
-import { Layer, Stage, Line, Rect } from "react-konva";
+import React, { useRef, useCallback, useState, useEffect } from "react";
+import { Layer, Stage, Line, Rect, Label } from "react-konva";
 import useImage from "use-image";
 import { Image as KonvaImage } from "react-konva";
-
+import Polygon from "./Polygon";
 import {
 	useShapes,
 	clearSelection,
@@ -18,25 +18,63 @@ import {
 import { DRAG_DATA_KEY, SHAPE_TYPES } from "./constants";
 import { Shape } from "./Shape";
 import Modal1 from "./Modal";
-import { Modal, Input } from "antd";
+import { Modal, Input, Select, Row, Col } from "antd";
 const handleDragOver = (event) => event.preventDefault();
 const AREA = "AREA"
 
+const { Option } = Select
 export function Canvas() {
 	const shapes = useShapes((state) => Object.entries(state.shapes));
-	const [background] = useImage('2-bedroom-house-plans-indian-style-1.jpg');
+	const [imag, setImage] = useState('floorplan.jpg')
+	const [background] = useImage(imag);
 	const stageRef = useRef();
 	const [area, setArea] = useState();
 	const [showModal, setShowModal] = useState(false);
 	const [points, setPoints] = useState([]);
 	const [visible, setVisible] = React.useState(false);
 	const [confirmLoading, setConfirmLoading] = React.useState(false);
-	const [modalText, setModalText] = React.useState('Select Or Add Area');
 	const [curMousePos, setCurMousePos] = useState([0, 0]);
 	const [isMouseOverStartPoint, setIsMouseOverStartPoint] = useState(false);
 	const [isFinished, setIsFinished] = useState(false);
 	const [areaName, setAreaName] = useState('');
-	//	const [endPoints, setEndPoints] = useState([]);
+	const [color, setColor] = useState();
+	const [selectedArea, setSelectedArea] = useState([]);
+	const [areas, setAreas] = useState([])
+	const [component, updateComponent] = useState(0);
+	const forceUpdateComponent = React.useCallback(() => updateComponent({}), []);
+
+	let flattenedPoints = points
+		.concat(isFinished ? [] : curMousePos)
+		.reduce((a, b) => a.concat(b), []);
+
+	useEffect(() => {
+		const localData = JSON.parse(localStorage.getItem('selectedArea'))
+		console.log(localData)
+		setAreas(localData)
+	}, [])
+
+	useEffect(() => {
+		setImage('floorplan.jpg');
+	}, [imag]);
+
+	useEffect(() => {
+		setPoints([]);
+		setCurMousePos([0, 0])
+		console.log("qwdqw", component)
+		flattenedPoints = []
+	}, [component])
+
+	useEffect(() => {
+		if (selectedArea.length) {
+			let newUpdatedArea = []
+			newUpdatedArea = JSON.parse(localStorage.getItem('selectedArea'))
+			newUpdatedArea.push(selectedArea[0])
+			localStorage.setItem("selectedArea", JSON.stringify(newUpdatedArea));
+		}
+		setAreas((previous) => [...previous, selectedArea]);
+		updateComponent((previous) => previous + 1);
+	}, [selectedArea])
+
 
 	const getMousePos = stage => {
 		return [stage.getPointerPosition().x, stage.getPointerPosition().y];
@@ -50,6 +88,7 @@ export function Canvas() {
 		}
 		if (isMouseOverStartPoint && points.length >= 3) {
 			setIsFinished(true);
+
 		} else {
 			setPoints([...points, mousePos]);
 		}
@@ -145,20 +184,16 @@ export function Canvas() {
 		const pos = [event.target.attrs.x, event.target.attrs.y];
 		console.log("end", pos);
 	};
-	const flattenedPoints = points
-		.concat(isFinished ? [] : curMousePos)
-		.reduce((a, b) => a.concat(b), []);
 
 	const handleOk = () => {
-		setModalText('Select Or Add Name To Area');
 		setConfirmLoading(true);
 		setTimeout(() => {
 			setVisible(false);
 			setConfirmLoading(false);
 		}, 2000);
-		console.log({ areaName: areaName, flattenedPoints: flattenedPoints })
+		setSelectedArea((prevArray) => [...prevArray, { areaName: areaName, color: color, flattenedPoints: flattenedPoints, points: points }])
+		//handleReset();
 	};
-
 	const handleCancel = () => {
 		console.log('Clicked cancel button');
 		setVisible(false);
@@ -167,6 +202,23 @@ export function Canvas() {
 	const openModal = () => {
 		setVisible(true);
 	}
+	const uploadImage = () => {
+		setImage('2-bedroom-house-plans-indian-style-2.jpg');
+	}
+	const handleColorDropdown = (e) => {
+		console.log(e)
+		setColor(e)
+	}
+	const handleReset = () => {
+		setPoints([])
+		setSelectedArea([]);
+	}
+	const area1 = []
+	// [{ "areaName": "BedRoom1", "color": "red", "flattenedPoints": [6.899993896484375, 9, 284.8999938964844, 9, 284.8999938964844, 201, 6.899993896484375, 199] },
+	//{ "areaName": "Bedroom2", "color": "blue", "flattenedPoints": [5.899993896484375, 200.53334045410156, 240.89999389648438, 201.53334045410156, 238.89999389648438, 361.53334045410156, 9.899993896484375, 360.53334045410156] },
+	//{ "areaName": "Bathroom", "color": "green", "flattenedPoints": [286.8999938964844, 10, 287.8999938964844, 199, 401.8999938964844, 199, 401.8999938964844, 7] },
+	//{ "areaName": "Living Area", "color": "yellow", "flattenedPoints": [405.8999938964844, 120, 737.8999938964844, 123, 736.8999938964844, 353, 406.8999938964844, 358] }
+	//]
 	return (
 		<main className="canvas" onDrop={handleDrop} onDragOver={handleDragOver}>
 			<div className="custom-select">
@@ -181,7 +233,7 @@ export function Canvas() {
 			</div>
 			{/*<p>{area}</p>*/}
 			<div className="buttons">
-
+				<button onClick={uploadImage}>Upload Image</button>
 				<button onClick={saveDiagram}>Save</button>
 				<button onClick={showOverview}>Overview</button>
 				<button onClick={reset}>Reset</button>
@@ -207,62 +259,67 @@ export function Canvas() {
 						<Shape key={key} shape={{ ...shape, id: key }} />
 					))}
 				</Layer>
+
+				{areas ? areas.map((item, index) =>
+					<Layer key={index}>
+						<Polygon
+							key={index}
+							handleMouseOverStartPoint={handleMouseOverStartPoint}
+							handleMouseOutStartPoint={handleMouseOutStartPoint}
+							handleDragStartPoint={handleDragStartPoint}
+							handleDragMovePoint={handleDragMovePoint}
+							handleDragOver={handleDragOver}
+							isFinished={isFinished}
+							points={item.points ? item.points : []}
+							flattenedPoints={item.flattenedPoints}
+							openModal={openModal}
+							color={item.color}
+						/>
+					</Layer>
+				)
+					: null}
 				<Layer>
-					<Line
-						points={flattenedPoints}
-						stroke="#0EA5E9"
-						strokeWidth={1}
-						closed={isFinished}
-						fill="#0EA5E9"
-						opacity={0.5}
-						onClick={openModal}
+					<Polygon
+						handleMouseOverStartPoint={handleMouseOverStartPoint}
+						handleMouseOutStartPoint={handleMouseOutStartPoint}
+						handleDragStartPoint={handleDragStartPoint}
+						handleDragMovePoint={handleDragMovePoint}
+						handleDragOver={handleDragOver}
+						isFinished={isFinished}
+						points={points}
+						flattenedPoints={flattenedPoints}
+						openModal={openModal}
 					/>
-					{points.map((point, index) => {
-						const width = 6;
-						const x = point[0] - width / 2;
-						const y = point[1] - width / 2;
-						const startPointAttr =
-							index === 0
-								? {
-									hitStrokeWidth: 12,
-									onMouseOver: handleMouseOverStartPoint,
-									onMouseOut: handleMouseOutStartPoint
-								}
-								: null;
-						return (
-							<Rect
-								key={index}
-								x={x}
-								y={y}
-								width={width}
-								height={width}
-								fill="blue"
-								opacity={0.5}
-								stroke="black"
-								strokeWidth={1}
-								onDragStart={handleDragStartPoint}
-								onDragMove={handleDragMovePoint}
-								onDragEnd={handleDragOutPoint}
-								draggable
-								{...startPointAttr}
-							/>
-						);
-					})}
 				</Layer>
 			</Stage>
 			<Modal
-				title="Set Area"
+				title="Define Area"
 				visible={visible}
 				onOk={handleOk}
 				confirmLoading={confirmLoading}
 				onCancel={handleCancel}
 			>
 				<>
-					<p>{modalText}</p>
-					<Input
-						type="text"
-						placeholder="Area Name"
-						onChange={({ target: { value } }) => setAreaName(value)} />
+					<Row className="mb-5">
+						<Col span={10}><Label>Add Name To Area</Label></Col>
+						<Col span={10}><Input
+							type="text"
+							placeholder="Area Name"
+							onChange={({ target: { value } }) => setAreaName(value)} />
+						</Col>
+					</Row>
+					<Row className="mb-5">
+						<Col span={10}><Label>Select Color</Label></Col>
+						<Col span={10}>
+							<Select style={{ width: 197 }} className="custom-select" placeholder="Select Color" onChange={handleColorDropdown}>
+								<Option value="red">Red</Option>
+								<Option value="blue">Blue</Option>
+								<Option value="green">Green</Option>
+								<Option value="yellow">Yellow</Option>
+							</Select>
+						</Col>
+
+					</Row>
 				</>
 			</Modal>
 			{

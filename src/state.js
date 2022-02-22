@@ -7,6 +7,11 @@ const { message, Button, Space } = require("antd");
 
 const APP_NAMESPACE = "__integrtr_diagrams__";
 const AREA = "AREA"
+const VERSION = "VERSION"
+
+const version = 0;
+const useCounter = createStore(version);
+
 const baseState = {
 	selected: null,
 	shapes: {},
@@ -53,6 +58,9 @@ export const saveDiagram = () => {
 
 	}
 	console.log(obj)
+	useCounter.set((prevCount) => prevCount + 1)
+	const count = useCounter.get();
+	localStorage.setItem(VERSION, count)
 	localStorage.setItem("Overview", JSON.stringify(obj))
 	localStorage.setItem(APP_NAMESPACE, JSON.stringify(state.shapes));
 	message.success('Saved');
@@ -61,6 +69,8 @@ export const saveDiagram = () => {
 export const reset = () => {
 	localStorage.removeItem(APP_NAMESPACE);
 	localStorage.removeItem(AREA);
+	useCounter.set(version)
+	localStorage.removeItem(VERSION);
 	//localStorage.removeItem("Overview");
 	useShapes.set(baseState);
 };
